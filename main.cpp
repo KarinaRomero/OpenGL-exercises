@@ -3,33 +3,55 @@
 #include <functional>
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
+#include <SFML/OpenGL.hpp>
 #include <array>
 #include <cmath>
 
-using namespace std;
-using namespace sf;
-
-// `constexpr` defines an immutable compile-time value.
-constexpr int windowWidth{800}, windowHeight{600};
+constexpr int windowWhidth(800), windowHeight(600);
 
 int main()
 {
-    // Creation of the game window.
-    RenderWindow window{{windowWidth, windowHeight}, "Arkanoid - 1"};
-    window.setFramerateLimit(60);
+    // create the window
+    sf::Window window(sf::VideoMode(windowWhidth, windowHeight), "OpenGL", sf::Style::Default, sf::ContextSettings(32));
 
-    // Game loop.
-    while(true)
+    window.setVerticalSyncEnabled(true);
+
+    // activate the window
+    window.setActive(true);
+
+    // load resources, initialize the OpenGL states, ...
+
+    // run the main loop
+    bool running = true;
+    while (running)
     {
-        // "Clear" the window from previously drawn graphics.
-        window.clear(Color::Black);
+        // handle events
+        sf::Event event;
+        while (window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed)
+            {
+                // end the program
+                running = false;
+            }
+            else if (event.type == sf::Event::Resized)
+            {
+                // adjust the viewport when the window is resized
+                glViewport(0, 0, event.size.width, event.size.height);
+            }
+        }
 
-        // If "Escape" is pressed, break out of the loop.
-        if(Keyboard::isKeyPressed(Keyboard::Key::Escape)) break;
+        // clear the buffers
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Show the window contents.
+        // draw...
+
+        // end the current frame (internally swaps the front and back buffers)
         window.display();
     }
+
+    // release resources...
 
     return 0;
 }
