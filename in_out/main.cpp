@@ -33,10 +33,10 @@ const char *vertexShaderSource = "#version 410 core\n"
 
 const char *fragmentShaderSource = "#version 410 core\n"
                                    "out vec4 FragColor;\n"
-                                   "uniform vec4 ourColor;\n"
+                                   "in vec4 vertexColor;\n"
                                    "void main()\n"
                                    "{\n"
-                                   "    FragColor = ourColor;\n"
+                                   "    FragColor = vertexColor;\n"
                                    "}\n";
 
 unsigned int VBO;
@@ -137,7 +137,7 @@ int main()
 
     // This line call to draw in wireframe polygons, to show lines
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    sf::Clock Clock;
+
     // run the main loop
     bool running = true;
     while (running)
@@ -164,11 +164,6 @@ int main()
 
         // draw...
         glUseProgram(shaderProgram);
-        sf::Time time = Clock.getElapsedTime();
-        float greenValue = sin(time.asSeconds()) / 2.0f + 0.5f;
-        int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
-        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
-
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         // end the current frame (internally swaps the front and back buffers)
