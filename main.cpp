@@ -5,6 +5,7 @@
 #include <OpenGL/gl3.h>
 #include <array>
 #include <cmath>
+#include "shader.hpp"
 
 constexpr int windowWhidth(800), windowHeight(600);
 
@@ -14,26 +15,8 @@ float vertices[] = {
     -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
     0.0f,  0.5f, 0.0f , 0.0f, 0.0f, 1.0f
 };
-// Indices to draw in order
 
-// Source the vertex shadow
-const char *vertexShaderSource = "#version 410 core\n"
-                                 "layout (location = 0) in vec3 aPos;\n"
-                                 "layout (location = 1) in vec3 aColor;\n"
-                                 "out vec3 ourColor;\n"
-                                 "void main()\n"
-                                 "{\n"
-                                 "    gl_Position = vec4(aPos, 1.0);\n"
-                                 "    ourColor = aColor;\n"
-                                 "}\n";
-
-const char *fragmentShaderSource = "#version 410 core\n"
-                                   "out vec4 FragColor;\n"
-                                   "in vec3 ourColor;\n"
-                                   "void main()\n"
-                                   "{\n"
-                                   "    FragColor = vec4(ourColor, 1.0);\n"
-                                   "}\n";
+Shader* ourShader = NULL;
 
 unsigned int VBO;
 unsigned int VAO;
@@ -54,58 +37,7 @@ int main()
 
     std::cout << "version:" << s.majorVersion << "." << s.minorVersion << std::endl;
 
-    // load resources, initialize the OpenGL states, ...
-    int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-
-    // To compile the shader in runtime
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-
-    // Verify errors to complie shader
-    int success;
-    char infolog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-
-    if (!success)
-    {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infolog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
-                  << infolog << std::endl;
-    }
-
-    // To create fragment shader
-    int fragmenShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmenShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmenShader);
-
-    // Verify errors to complie shader
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-
-    if (!success)
-    {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infolog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
-                  << infolog << std::endl;
-    }
-
-    // Creating the shader program
-    int shaderProgram = glCreateProgram();
-
-    // Attach the shader program
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmenShader);
-    glLinkProgram(shaderProgram);
-
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success)
-    {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infolog);
-        std::cout << "ERROR::SHADER::POGRAM::COMPILATION_FAILED\n"
-                  << infolog << std::endl;
-    }
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmenShader);
+    ourShader = new Shader("../shaders/shader.vs", "../shaders/shader.fs");
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -121,7 +53,6 @@ int main()
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3*sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    glUseProgram(shaderProgram);
 
     int nrAttributes;
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
@@ -155,6 +86,7 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // draw...
+        ourShader->use();
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
         // end the current frame (internally swaps the front and back buffers)
@@ -162,6 +94,7 @@ int main()
     }
 
     // release resources...
-
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
     return 0;
 }
