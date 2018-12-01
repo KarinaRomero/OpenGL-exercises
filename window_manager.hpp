@@ -1,10 +1,13 @@
 #ifndef LUtil_hpp
 #define LUtil_hpp
 
+/*#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"*/
 #include <iostream>
 #include <chrono>
 #include <functional>
 #include <SFML/Window.hpp>
+#include <SFML/Graphics/Image.hpp>
 #include <OpenGL/gl3.h>
 #include <array>
 #include <cmath>
