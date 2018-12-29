@@ -1,30 +1,33 @@
 #include "window_manager.hpp"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "./libs/stb_image.h"
+
+
 sf::Window *gWindow;
 Shader *ourShader;
 
 unsigned int VBO;
 unsigned int VAO;
 unsigned int EBO;
+unsigned int texture;
 
 // Init OpenGL
 bool initOpenGL()
 {
     // Array to define the vertices from -1 to 1
-   float vertices[] = {
-         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,
-         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f
-    };
+    float vertices[] = {
+        0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+        -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f};
 
     unsigned int indices[] = {
         0, 1, 3,
-        1, 2, 3
-    };
+        1, 2, 3};
 
     // Init shaders
-    ourShader = new Shader("../shaders/shader.vs", "../shaders/shader.fs");
+    ourShader = new Shader(VERTSPATH, FRAGSTPATH);
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -51,7 +54,6 @@ bool initOpenGL()
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
     std::cout << "Maximum nr of vertex attributes supported: " << nrAttributes << std::endl;
 
-    unsigned int texture;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
 
@@ -61,17 +63,33 @@ bool initOpenGL()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    // Load image with sfml
     sf::Image data;
-    if (!data.loadFromFile("../assets/container.jpg"))
+    if (!data.loadFromFile(IMAGE))
     {
         std::cout << "Failed to load texture" << std::endl;
         return false;
     }
-    else
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, data.getSize().x, data.getSize().y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.getPixelsPtr());
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    /*
+    // Load image with stbi
+    int width, height, nrChannels;
+    unsigned char *data = stbi_load("/users/fenix/developer/OpenGL-exercises/assets/container.jpg", &width, &height, &nrChannels, 0);
+    if (data)
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, data.getSize().x, data.getSize().y, 0, GL_RGB, GL_UNSIGNED_BYTE, data.getPixelsPtr());
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+    */
+
     return true;
 }
 
@@ -80,9 +98,11 @@ bool init()
 {
     bool success = true;
 
+
     sf::ContextSettings settings;
     settings.majorVersion = 4;
     settings.minorVersion = 0;
+    settings.attributeFlags = sf::ContextSettings::Core;
 
     // create the window
     gWindow = new sf::Window(sf::VideoMode(windowWhidth, windowHeight), "OpenGL", sf::Style::Default, settings);
@@ -127,11 +147,13 @@ void clearScreen()
 //Load media
 bool loadMedia()
 {
+    return false;
 }
 
 //Render textures and shapes
 void draw()
 {
+    glBindTexture(GL_TEXTURE_2D, texture);
     ourShader->use();
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

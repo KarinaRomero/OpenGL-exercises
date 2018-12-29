@@ -1,17 +1,19 @@
 #ifndef LUtil_hpp
 #define LUtil_hpp
+#define GL_SILENCE_DEPRECATION
 
 /*#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"*/
+#include <SFML/Graphics/Image.hpp>
 #include <iostream>
 #include <chrono>
 #include <functional>
 #include <SFML/Window.hpp>
-#include <SFML/Graphics/Image.hpp>
 #include <OpenGL/gl3.h>
 #include <array>
 #include <cmath>
 #include "shader.hpp"
+#include "config.hpp"
 
 constexpr int windowWhidth(800), windowHeight(600);
 

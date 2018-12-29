@@ -50,6 +50,9 @@
 # Build
 build/
 
+#Custom config
+config.hpp
+
 ## ds_store
 .DS_Store
 
